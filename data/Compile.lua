@@ -18,55 +18,30 @@ function getInput(msg,list)
 		return dat
 	end
 end
+if not bin.fileExist("../game.love") or not bin.fileExist("../loveandroid.apk") then
+	print("game.love and loveandroid.apk must be in the root directory!\nPress Enter to continue...")
+	io.read()
+	os.exit()
+end
 print("AutoLoveMaker V1.0.0\nEnsure that all your files are in the same directory as the program! game.love, and loveandroid.apk must be present with these filenames for the program to work!")
 name = getInput("Game Name: ")
 if not io.dirExists("dat") then
 	io.mkDir("dat")
 end
 _o={l = "sensorLandscape",p = "portrait"}
-if bin.fileExist("dat/"..name..".dat") then
-	b = getInput("You have compiled a game by this name before! Do you want to use the last build settings? (y/n): ",{"y","n"})
-	if not io.dirExists("love_decoded") then
-		os.execute([[apktool d -s -o love_decoded ../loveandroid.apk]])
-	end
-	if b=="y" then
-		local file = bin.load("dat/"..name..".dat")
-		local dat = file:getBlock("t")
-		o=dat.o
-		packageName=dat.packageName
-		ver=dat.ver
-		verN=dat.verN
-	else
-		print("We are going to manage Settings that affect your apk...")
-		o = getInput("Svreep Orientation(p - portrait | l - landscape): ",{"o","p"})
-		packageName = "game."..name..".org"
-		ver = getInput("Version Code(number): ")
-		verN = getInput("Version Name(number.number): ")
-		if not io.dirExists("love_decoded") then
-			os.execute([[apktool d -s -o love_decoded ../loveandroid.apk]])
-		end
-		io.mkDir("love_decoded/assets")
-		bin.load("game.love"):tofile("love_decoded/assets/game.love")
-		local file = bin.new()
-		file:addBlock({
-			o = o,
-			packageName = packageName,
-			ver = ver,
-			verN = verN,
-		})
-		file:tofile("dat/"..name..".dat")
-	end
-else
+if not io.dirExists("love_decoded") then
+	os.execute([[apktool d -s -o love_decoded ../loveandroid.apk]])
+end
+if not io.dirExists("love_decoded/assets") then
+	io.mkDir("love_decoded/assets")
+end
+bin.load("../game.love"):tofile("love_decoded/assets/game.love")
+function Work()
 	print("We are going to manage Settings that affect your apk...")
 	o = getInput("Svreep Orientation(p - portrait | l - landscape): ",{"o","p"})
 	packageName = "game."..name..".org"
 	ver = getInput("Version Code(number): ")
 	verN = getInput("Version Name(number.number): ")
-	if not io.dirExists("love_decoded") then
-		os.execute([[apktool d -s -o love_decoded ../loveandroid.apk]])
-	end
-	io.mkDir("love_decoded/assets")
-	bin.load("game.love"):tofile("love_decoded/assets/game.love")
 	local file = bin.new()
 	file:addBlock({
 		o = o,
@@ -75,6 +50,21 @@ else
 		verN = verN,
 	})
 	file:tofile("dat/"..name..".dat")
+end
+if bin.fileExist("dat/"..name..".dat") then
+	b = getInput("You have compiled a game by this name before! Do you want to use the last build settings? (y/n): ",{"y","n"})
+	if b=="y" then
+		local file = bin.load("dat/"..name..".dat")
+		local dat = file:getBlock("t")
+		o=dat.o
+		packageName=dat.packageName
+		ver=dat.ver
+		verN=dat.verN
+	else
+		Work()
+	end
+else
+	Work()
 end
 if bin.fileExist("../game.png") then
 	print("building icon")
@@ -135,7 +125,6 @@ f1 = bin.load(name.."-aligned-debugSigned.apk"):tofile("../"..name.."-Signed.apk
 f2 = bin.load(name..".apk"):tofile("../"..name.."-Unsigned.apk")
 os.remove(name.."-aligned-debugSigned.apk")
 os.remove(name..".apk")
---minSdkVersion: '16'
---targetSdkVersion: '16'
-
---portrait,sensorLandscape
+io.write("Cleanup folder ")
+os.execute([[rmdir love_decoded /s]])
+getInput("Press Enter to continue...")
